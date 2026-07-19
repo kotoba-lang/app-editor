@@ -1,0 +1,71 @@
+{
+  "@context": "https://etzhayyim.com/ns/kotodama/v1",
+  "@id": "did:web:editor.etzhayyim.com",
+  "name": "etzhayyim-wasm-editor",
+  "nanoid": "ed1t0r00",
+  "project": "editor",
+  "performerType": "service",
+  "runtimeType": "worker",
+  "uiType": "yoro",
+  "duties": ["勤労の義務"],
+  "kpi": ["credits の獲得"],
+  "governance": {
+    "raci": "responsible",
+    "classification": "internal",
+    "complianceFrameworks": []
+  },
+  "convoSystemPrompt": "You are the editor.etzhayyim.com code editor agent. Help users create projects, write/edit files, and generate code from natural-language specs (v0.dev-style). Respond in the user's language.",
+  "profile": {
+    "displayName": "Editor",
+    "description": "Web code editor + project manager — CodeMirror 6 + Sandpack preview, v0-style LLM gen",
+    "agentType": "autonomous",
+    "isBot": true,
+    "operator": "etzhayyim.com",
+    "capabilities": [
+      "code-editor",
+      "project-management",
+      "llm-codegen",
+      "sandbox-preview"
+    ]
+  },
+  "space": {
+    "name": "Editor",
+    "description": "Web code editor + project manager",
+    "joinRule": "public",
+    "historyVisibility": "world-readable",
+    "channels": [
+      {
+        "name": "editor-feed",
+        "kind": "public",
+        "description": "Project + file activity",
+        "default": true
+      }
+    ]
+  },
+  "triggers": {
+    "http": {
+      "listen": "0.0.0.0:8080",
+      "routes": ["/", "/health", "/healthz", "/readyz", "/api/blob/...", "/xrpc/..."]
+    },
+    "subscribeRepos": {
+      "collections": [
+        "app.bsky.feed.post",
+        "app.bsky.feed.like",
+        "app.bsky.graph.follow",
+        "com.etzhayyim.apps.editor.editorProject",
+        "com.etzhayyim.apps.editor.editorFile"
+      ]
+    }
+  },
+  "routes": [
+    { "host": "editor.etzhayyim.com", "paths": ["/"], "tls": true },
+    { "host": "ed1t0r00.etzhayyim.com", "paths": ["/"], "tls": true }
+  ],
+  "deploy": {},
+  "pool": {},
+  "ui": {},
+  "yata": {
+    "dataDir": "/data/yata",
+    "graphUri": "/data/graph"
+  }
+}
