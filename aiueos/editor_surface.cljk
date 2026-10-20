@@ -1,0 +1,69 @@
+(ns editor.surface
+  "appview 面宣言の判定コア — itonami dapp bundle（pure, :effects #{}）。
+
+  appview surface が自己宣言するメタデータ（正本:
+  appview/etzhayyim-wasm-editor-ed1t0r00/cljs/src/editor/app.cljk の
+  default-db）の**整合判定**。この port は scaffold の stale 値
+  （routeCount 0 / [] / []）を wrangler.jsonc の実値で**訂正済み** ——
+  宣言と設定の一致が判定の対象:
+
+  - route-count は宣言の数と実際の routes の数が一致する
+  - vars は wrangler の vars キーと一致する（過少・過多を検出）
+  - kind は閉じた集合（0 appview / 1 worker / 2 component / 3 app）
+  - relative-path はレンダリング元ソースの明示
+
+  route-count-ok / vars-count-ok: 1 = 一致
+  surface-judgment のエラービット（0 = 規則どおり）:
+    1 :count-mismatch  route-count が routes の数と違う
+    2 :bad-kind        kind が閉じた集合の外
+    4 :no-source-path  レンダリング元の明示が無い
+    8 :vars-mismatch   vars の数が設定と違う
+
+  実行 host はスカラーのみ = KIR v3 / i64/direct ABI（kernel/selfhost 両対応）。
+
+  テストはゼロ引数 test-*、戻り 1/0:
+  <amu> test aiueos/editor_surface.cljk"
+  (:export [main route-count-ok vars-count-ok kind-ok surface-judgment
+            test-count test-vars test-kind test-surface test-fail-closed]))
+
+(defn main [] :i64
+  0)
+
+(defn route-count-ok [declared :i64 n-actual :i64] :i64
+  (if (= declared n-actual) 1 0))
+
+(defn vars-count-ok [declared :i64 n-actual :i64] :i64
+  (if (= declared n-actual) 1 0))
+
+(defn kind-ok [kind-code :i64] :i64
+  (if (and (>= kind-code 0) (<= kind-code 3)) 1 0))
+
+(defn- denied [ok :i64 bit :i64] :i64
+  (if (= ok 1) 0 bit))
+
+(defn surface-judgment [count-ok :i64 kind-code :i64 has-source-path :i64 vars-ok :i64] :i64
+  (+ (denied count-ok 1)
+     (denied (kind-ok kind-code) 2)
+     (denied has-source-path 4)
+     (denied vars-ok 8)))
+
+;; --- tests（戻り 1 = pass） ------------------------------------------------
+
+(defn test-count [] :i64
+  (if (= (+ (route-count-ok 2 2) (route-count-ok 2 3)) 1) 1 0))
+
+(defn test-vars [] :i64
+  (if (= (+ (vars-count-ok 8 8) (vars-count-ok 8 7)) 1) 1 0))
+
+(defn test-kind [] :i64
+  (if (= (+ (kind-ok 0) (kind-ok 3) (kind-ok 4)) 2) 1 0))
+
+(defn test-surface [] :i64
+  (if (= (surface-judgment 1 0 1 1) 0) 1 0))
+
+(defn test-fail-closed [] :i64
+  ;; 各違反は独立に立つ（count / kind / path / vars）
+  (if (= (+ (surface-judgment 0 0 1 1) (surface-judgment 1 9 1 1)
+            (surface-judgment 1 0 0 1) (surface-judgment 1 0 1 0))
+         15)
+    1 0))

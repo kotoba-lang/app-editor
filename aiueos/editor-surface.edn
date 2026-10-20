@@ -1,0 +1,19 @@
+;; app-editor — itonami（dapp）の aiueos アプリ記述子（notes.edn 形）。
+;; 判定コアは aiueos/editor_surface.cljk（面宣言 x 設定の整合判定）。
+;; 正本は appview/etzhayyim-wasm-editor-ed1t0r00/cljs/src/editor/app.cljk
+;; （default-db = wrangler.jsonc で訂正済みの宣言）。pure（:effects #{}）。
+{:aiueos/component :app/editor-surface
+ :aiueos/kind :app
+ :aiueos/trust :untrusted
+ :aiueos/source "editor_surface.cljk"
+ :aiueos/wasm "editor_surface.wasm"
+ :aiueos/entry "main"
+ :aiueos/args []
+ :aiueos/imports #{}
+ :aiueos/exports #{:app/main
+                   :app/route-count-ok
+                   :app/vars-count-ok
+                   :app/kind-ok
+                   :app/surface-judgment}
+ :aiueos/effects #{}
+ :aiueos/limits {:memory-pages 16 :fuel 5000000}}
